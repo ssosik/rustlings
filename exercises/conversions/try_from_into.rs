@@ -12,6 +12,21 @@ struct Color {
     blue: u8,
 }
 
+impl Color {
+    fn new(red: i16, green: i16, blue: i16) -> Result<Self, IntoColorError> {
+        if <u8 as std::convert::TryFrom<i16>>::try_from(red).is_err() || 
+            <u8 as std::convert::TryFrom<i16>>::try_from(green).is_err() ||
+                <u8 as std::convert::TryFrom<i16>>::try_from(blue).is_err() {
+            Err(IntoColorError::IntConversion)
+        } else {
+            let red = red.try_into().unwrap();
+            let green = green.try_into().unwrap();
+            let blue = blue.try_into().unwrap();
+            Ok(Color{red, blue, green})
+        }
+    }
+}
+
 // We will use this error type for these `TryFrom` conversions.
 #[derive(Debug, PartialEq)]
 enum IntoColorError {
@@ -36,6 +51,8 @@ enum IntoColorError {
 impl TryFrom<(i16, i16, i16)> for Color {
     type Error = IntoColorError;
     fn try_from(tuple: (i16, i16, i16)) -> Result<Self, Self::Error> {
+        let (red, green, blue) = tuple;
+        Color::new(red, green, blue)
     }
 }
 
@@ -43,6 +60,10 @@ impl TryFrom<(i16, i16, i16)> for Color {
 impl TryFrom<[i16; 3]> for Color {
     type Error = IntoColorError;
     fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {
+        let red = arr[0];
+        let green = arr[1];
+        let blue = arr[2];
+        Color::new(red, green, blue)
     }
 }
 
@@ -50,6 +71,10 @@ impl TryFrom<[i16; 3]> for Color {
 impl TryFrom<&[i16]> for Color {
     type Error = IntoColorError;
     fn try_from(slice: &[i16]) -> Result<Self, Self::Error> {
+        match slice {
+            [red, green, blue] => Color::new(*red, *green, *blue),
+            _ => Err(IntoColorError::BadLen),
+        }
     }
 }
 
