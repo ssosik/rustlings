@@ -14,16 +14,10 @@ struct Color {
 
 impl Color {
     fn new(red: i16, green: i16, blue: i16) -> Result<Self, IntoColorError> {
-        if <u8 as std::convert::TryFrom<i16>>::try_from(red).is_err() || 
-            <u8 as std::convert::TryFrom<i16>>::try_from(green).is_err() ||
-                <u8 as std::convert::TryFrom<i16>>::try_from(blue).is_err() {
-            Err(IntoColorError::IntConversion)
-        } else {
-            let red = red.try_into().unwrap();
-            let green = green.try_into().unwrap();
-            let blue = blue.try_into().unwrap();
-            Ok(Color{red, blue, green})
-        }
+        let red = red.try_into().map_err(|_| IntoColorError::IntConversion)?;
+        let green = green.try_into().map_err(|_| IntoColorError::IntConversion)?;
+        let blue = blue.try_into().map_err(|_| IntoColorError::IntConversion)?;
+        Ok(Color{red, blue, green})
     }
 }
 
@@ -35,8 +29,6 @@ enum IntoColorError {
     // Integer conversion error
     IntConversion,
 }
-
-// I AM NOT DONE
 
 // Your task is to complete this implementation
 // and return an Ok result of inner type Color.
@@ -60,10 +52,7 @@ impl TryFrom<(i16, i16, i16)> for Color {
 impl TryFrom<[i16; 3]> for Color {
     type Error = IntoColorError;
     fn try_from(arr: [i16; 3]) -> Result<Self, Self::Error> {
-        let red = arr[0];
-        let green = arr[1];
-        let blue = arr[2];
-        Color::new(red, green, blue)
+        Color::new(arr[0], arr[1], arr[2])
     }
 }
 
